@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:movie_test/controllers/detail_controller.dart';
 import 'package:movie_test/models/cast.dart';
 import 'package:movie_test/models/movie.dart';
 import '../components/images/cover_image.dart';
@@ -21,29 +23,30 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
 
-  List<Cast>? castList;
-  List<Movie>? recommendationMovies;
+  // List<Cast>? castList;
+  // List<Movie>? recommendationMovies;
+  final DetailController c = Get.put(DetailController());
 
-  loadCastList() {
-    API().getCasts(widget.movie.id).then((value) {
-      setState(() {
-        castList = value;
-      });
-    });
-  }
-
-  loadRecommendationMovies() {
-    API().getRecommendationMovies(widget.movie.id).then((value) {
-      setState(() {
-        recommendationMovies = value;
-      });
-    });
-  }
+  // loadCastList() {
+  //   API().getCasts(widget.movie.id).then((value) {
+  //     setState(() {
+  //       castList = value;
+  //     });
+  //   });
+  // }
+  //
+  // loadRecommendationMovies() {
+  //   API().getRecommendationMovies(widget.movie.id).then((value) {
+  //     setState(() {
+  //       recommendationMovies = value;
+  //     });
+  //   });
+  // }
 
   @override
   void initState() {
-    loadCastList();
-    loadRecommendationMovies();
+    c.loadCastList(widget.movie.id);
+    c.loadRecommendationMovies(widget.movie.id);
     super.initState();
   }
 
@@ -52,16 +55,16 @@ class _DetailPageState extends State<DetailPage> {
       height: 260,
       child: CoverImage(imageUrl: API.imageURL400 + widget.movie.backdropPath));
 
-  Widget _castList() => castList == null
+  Widget _castList() => c.castList.isEmpty
       ? const CircularProgressIndicator()
       : SizedBox(
     width: MediaQuery.of(context).size.width,
     height: 120,
     child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: castList!.length,
+        itemCount: c.castList.length,
         itemBuilder: ((context, index) {
-          Cast cast = castList![index];
+          Cast cast = c.castList[index];
           return CastItem(
             name: cast.name,
             id: cast.id,
@@ -120,33 +123,36 @@ class _DetailPageState extends State<DetailPage> {
           title: Text(widget.movie.title),
           elevation: 0,
         ),
-        body: SingleChildScrollView(
-          child: Stack(
-            children: [
-              _coverImage(),
-              Container(
-                margin: const EdgeInsets.only(top: 180),
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _movieInformation(),
-                      const SizedBox(height: 10),
-                      _title("Cast"),
-                      _castList(),
-                      recommendationMovies == null
-                          ? const CircularProgressIndicator()
-                          : MovieList(
-                          title: "Recommendation",
-                          movieList: recommendationMovies!),
-                    ],
+        body: Obx((){
+          return SingleChildScrollView(
+            child: Stack(
+              children: [
+                _coverImage(),
+                Container(
+                  margin: const EdgeInsets.only(top: 180),
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _movieInformation(),
+                        const SizedBox(height: 10),
+                        _title("Cast"),
+                        _castList(),
+                        c.recommendationMovies.isEmpty
+                            ? const CircularProgressIndicator()
+                            : MovieList(
+                            title: "Recommendation",
+                            movieList: c.recommendationMovies),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            ],
-          ),
-        ));
+                )
+              ],
+            ),
+          );
+        })
+    );
   }
 }
