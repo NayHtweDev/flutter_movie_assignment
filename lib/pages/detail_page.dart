@@ -6,6 +6,7 @@ import 'package:movie_test/models/movie.dart';
 import '../components/images/cover_image.dart';
 import '../components/images/poster_image.dart';
 import '../components/items/cast_item.dart';
+import '../components/lists/movie_list.dart';
 import '../network/api.dart';
 
 class DetailPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
 
   List<Cast>? castList;
+  List<Movie>? recommendationMovies;
 
   loadCastList() {
     API().getCasts(widget.movie.id).then((value) {
@@ -30,10 +32,18 @@ class _DetailPageState extends State<DetailPage> {
     });
   }
 
+  loadRecommendationMovies() {
+    API().getRecommendationMovies(widget.movie.id).then((value) {
+      setState(() {
+        recommendationMovies = value;
+      });
+    });
+  }
 
   @override
   void initState() {
     loadCastList();
+    loadRecommendationMovies();
     super.initState();
   }
 
@@ -125,7 +135,12 @@ class _DetailPageState extends State<DetailPage> {
                       _movieInformation(),
                       const SizedBox(height: 10),
                       _title("Cast"),
-                      _castList()
+                      _castList(),
+                      recommendationMovies == null
+                          ? const CircularProgressIndicator()
+                          : MovieList(
+                          title: "Recommendation",
+                          movieList: recommendationMovies!),
                     ],
                   ),
                 ),

@@ -45,7 +45,11 @@ class API {
       var res = ResponseCredits.fromRawJson(response.body);
       return res.cast;
     }
-    throw Exception("Faild to load credits");
+    throw Exception("Faild to load cast");
+  }
+
+  Future<List<Movie>> getRecommendationMovies(int id) {
+    return _getMovieList("/movie/$id/recommendations");
   }
 
 }
